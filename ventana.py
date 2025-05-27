@@ -1,9 +1,10 @@
 import tkinter as tk
+from ventanajuego import VentanaJuego
 
-class MiVentana:
+class VentanaPrincipal:
     def __init__(self):
         self.ventana = tk.Tk()
-        self.ventana.title("Ventana en POO")
+        self.ventana.title("Memory Game")
         self.ventana.geometry("1200x700")
         self.inicializar_componentes()
 
@@ -11,10 +12,17 @@ class MiVentana:
         etiqueta = tk.Label(self.ventana, text="¡Hola desde una clase!", font=("Arial", 14))
         etiqueta.pack(pady=20)
 
+        boton_jugar = tk.Button(self.ventana, text="Ir al Juego", font=("Arial", 12), command=self.abrir_juego)
+        boton_jugar.pack(pady=10)
+
+    def abrir_juego(self):
+        self.ventana.withdraw()
+        VentanaJuego(self.ventana)
+
     def ejecutar(self):
         self.ventana.mainloop()
 
-# Crear y ejecutar la ventana
+# Ejecutar solo si este archivo es el principal
 if __name__ == "__main__":
-    app = MiVentana()
+    app = VentanaPrincipal()
     app.ejecutar()
