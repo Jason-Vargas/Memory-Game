@@ -9,7 +9,9 @@ class VentanaJuego:
         self.ventana_anterior = ventana_anterior
         self.ventana = tk.Toplevel()
         self.ventana.title("Juego de Memoria")
-        self.ventana.geometry("640x700")
+        self.ventana.geometry("700x780")
+        self.ventana.configure(bg="#f3f3f3")
+
         self.filas = 6
         self.columnas = 6
         self.boton_size = 90
@@ -28,7 +30,7 @@ class VentanaJuego:
     def cargar_imagenes(self):
         ruta_img = "IMG"
         nombres_png = [nombre for nombre in os.listdir(ruta_img) if nombre.endswith(".png")]
-        nombres_png = nombres_png[:self.total_parejas]  # Solo los primeros 18 si hay más
+        nombres_png = nombres_png[:self.total_parejas]  # Asegura que no haya más de 18
 
         self.imagenes_temp = []
         for nombre in nombres_png:
@@ -36,7 +38,7 @@ class VentanaJuego:
             imagen = Image.open(ruta).resize((self.boton_size, self.boton_size))
             imagen_tk = ImageTk.PhotoImage(imagen)
             self.imagenes_temp.append(imagen_tk)
-            self.imagenes_temp.append(imagen_tk)  # Duplicar para hacer la pareja
+            self.imagenes_temp.append(imagen_tk)  # Duplicar para hacer pareja
 
         random.shuffle(self.imagenes_temp)
 
@@ -51,15 +53,15 @@ class VentanaJuego:
             self.imagenes_por_celda.append(fila)
 
     def crear_interfaz(self):
-        self.frame_principal = tk.Frame(self.ventana)
+        self.frame_principal = tk.Frame(self.ventana, bg="#f3f3f3")
         self.frame_principal.pack(fill="both", expand=True)
 
-        self.frame_info = tk.Frame(self.frame_principal, height=40, bg="lightgray")
+        self.frame_info = tk.Frame(self.frame_principal, height=50, bg="#858386")
         self.frame_info.pack(side="top", fill="x")
-        etiqueta_info = tk.Label(self.frame_info, text="Jason Vargas", font=("Arial", 14))
-        etiqueta_info.pack(expand=True)
 
-        self.frame_matriz = tk.Frame(self.frame_principal)
+        
+
+        self.frame_matriz = tk.Frame(self.frame_principal, bg="#696969")
         self.frame_matriz.pack(expand=True, pady=(10, 20))
 
         self.crear_matriz()
@@ -68,13 +70,16 @@ class VentanaJuego:
         for i in range(self.filas):
             fila = []
             for j in range(self.columnas):
-                frame_celda = tk.Frame(self.frame_matriz, width=self.boton_size, height=self.boton_size)
-                frame_celda.grid(row=i, column=j, padx=4, pady=4)
+                frame_celda = tk.Frame(self.frame_matriz, width=self.boton_size, height=self.boton_size, bg="#f3f3f3")
+                frame_celda.grid(row=i, column=j, padx=6, pady=6)
                 frame_celda.propagate(False)
 
                 boton = tk.Button(frame_celda,
-                        bg="white",
-                        relief="raised",
+                        bg="#ffffff",
+                        relief="flat",
+                        bd=0,
+                        highlightthickness=0,
+                        activebackground="#e6e6e6",
                         command=lambda f=i, c=j: self.revelar_imagen(f, c))
                 boton.pack(fill="both", expand=True)
                 fila.append(boton)
@@ -93,7 +98,7 @@ class VentanaJuego:
         self.celdas_reveladas.append((fila, col))
 
         if len(self.celdas_reveladas) == 2:
-            self.ventana.after(1000, self.verificar_coincidencia)
+            self.ventana.after(800, self.verificar_coincidencia)
 
     def verificar_coincidencia(self):
         (f1, c1), (f2, c2) = self.celdas_reveladas

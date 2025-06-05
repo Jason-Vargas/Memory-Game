@@ -1,5 +1,6 @@
 import tkinter as tk
 from ventanajuego import VentanaJuego
+from interfaz import *
 
 class VentanaPrincipal:
     def __init__(self):
@@ -9,10 +10,10 @@ class VentanaPrincipal:
         self.inicializar_componentes()
 
     def inicializar_componentes(self):
-        etiqueta = tk.Label(self.ventana, text="¡Hola desde una clase!", font=("Arial", 14))
+        etiqueta = tk.Label(self.ventana, text="Memory Game", font=("Arial", 14))
         etiqueta.pack(pady=20)
 
-        boton_jugar = tk.Button(self.ventana, text="Ir al Juego", font=("Arial", 12), command=self.abrir_juego)
+        boton_jugar = tk.Button(self.ventana, text="Modo Clásico", font=("Arial", 12), command=self.abrir_juego)
         boton_jugar.pack(pady=10)
 
     def abrir_juego(self):
