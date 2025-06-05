@@ -6,20 +6,26 @@ from PIL import Image, ImageTk
 import random
 import os
 
+import tkinter as tk
+from PIL import Image, ImageTk
+import random
+import os
+
 class VentanaJuego:
     def __init__(self, ventana_anterior):
         self.ventana_anterior = ventana_anterior
         self.ventana = tk.Toplevel()
-        self.ventana.title("Ventana de Juego")
-        self.ventana.geometry("400x300")  # Tamaño ajustado
-        self.filas = 2
-        self.columnas = 3
-        self.boton_size = 100
+        self.ventana.title("Juego de Memoria")
+        self.ventana.geometry("600x600")
+        self.filas = 4
+        self.columnas = 4
+        self.boton_size = 90
 
         self.botones = []
         self.celdas_reveladas = []
         self.imagenes_por_celda = []
 
+        self.nombres_imagenes = ["Bird", "Block", "Ghost", "Heart", "Monkey", "Nave", "Shield", "Timer"]
         self.cargar_imagenes()
         self.asignar_imagenes()
         self.crear_interfaz()
@@ -27,15 +33,14 @@ class VentanaJuego:
 
     def cargar_imagenes(self):
         ruta_img = "IMG"
-        nombres = ["azul.png", "Ball.png", "Personaje.png"]
-
         imagenes_temp = []
-        for nombre in nombres:
-            ruta = os.path.join(ruta_img, nombre)
+
+        for nombre in self.nombres_imagenes:
+            ruta = os.path.join(ruta_img, nombre + ".png")
             imagen = Image.open(ruta).resize((self.boton_size, self.boton_size))
             imagen_tk = ImageTk.PhotoImage(imagen)
             imagenes_temp.append(imagen_tk)
-            imagenes_temp.append(imagen_tk)  # duplicar para hacer la pareja
+            imagenes_temp.append(imagen_tk)  # duplicar para la pareja
 
         random.shuffle(imagenes_temp)
         self.imagenes_asignadas = imagenes_temp
