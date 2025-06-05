@@ -1,12 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk
-
-import tkinter as tk
-from PIL import Image, ImageTk
-import random
-import os
-
-import tkinter as tk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 import random
 import os
@@ -16,16 +9,17 @@ class VentanaJuego:
         self.ventana_anterior = ventana_anterior
         self.ventana = tk.Toplevel()
         self.ventana.title("Juego de Memoria")
-        self.ventana.geometry("600x600")
-        self.filas = 4
-        self.columnas = 4
+        self.ventana.geometry("640x700")
+        self.filas = 6
+        self.columnas = 6
         self.boton_size = 90
 
         self.botones = []
         self.celdas_reveladas = []
         self.imagenes_por_celda = []
+        self.total_parejas = (self.filas * self.columnas) // 2
+        self.parejas_encontradas = 0
 
-        self.nombres_imagenes = ["Bird", "Block", "Ghost", "Heart", "Monkey", "Nave", "Shield", "Timer"]
         self.cargar_imagenes()
         self.asignar_imagenes()
         self.crear_interfaz()
@@ -33,17 +27,18 @@ class VentanaJuego:
 
     def cargar_imagenes(self):
         ruta_img = "IMG"
-        imagenes_temp = []
+        nombres_png = [nombre for nombre in os.listdir(ruta_img) if nombre.endswith(".png")]
+        nombres_png = nombres_png[:self.total_parejas]  # Solo los primeros 18 si hay más
 
-        for nombre in self.nombres_imagenes:
-            ruta = os.path.join(ruta_img, nombre + ".png")
+        self.imagenes_temp = []
+        for nombre in nombres_png:
+            ruta = os.path.join(ruta_img, nombre)
             imagen = Image.open(ruta).resize((self.boton_size, self.boton_size))
             imagen_tk = ImageTk.PhotoImage(imagen)
-            imagenes_temp.append(imagen_tk)
-            imagenes_temp.append(imagen_tk)  # duplicar para la pareja
+            self.imagenes_temp.append(imagen_tk)
+            self.imagenes_temp.append(imagen_tk)  # Duplicar para hacer la pareja
 
-        random.shuffle(imagenes_temp)
-        self.imagenes_asignadas = imagenes_temp
+        random.shuffle(self.imagenes_temp)
 
     def asignar_imagenes(self):
         self.imagenes_por_celda = []
@@ -51,7 +46,7 @@ class VentanaJuego:
         for i in range(self.filas):
             fila = []
             for j in range(self.columnas):
-                fila.append(self.imagenes_asignadas[idx])
+                fila.append(self.imagenes_temp[idx])
                 idx += 1
             self.imagenes_por_celda.append(fila)
 
@@ -74,7 +69,7 @@ class VentanaJuego:
             fila = []
             for j in range(self.columnas):
                 frame_celda = tk.Frame(self.frame_matriz, width=self.boton_size, height=self.boton_size)
-                frame_celda.grid(row=i, column=j, padx=5, pady=5)
+                frame_celda.grid(row=i, column=j, padx=4, pady=4)
                 frame_celda.propagate(False)
 
                 boton = tk.Button(frame_celda,
@@ -108,6 +103,10 @@ class VentanaJuego:
         if img1 == img2:
             self.botones[f1][c1].config(state="disabled")
             self.botones[f2][c2].config(state="disabled")
+            self.parejas_encontradas += 1
+
+            if self.parejas_encontradas == self.total_parejas:
+                messagebox.showinfo("¡Felicidades!", "¡Has encontrado todas las parejas!")
         else:
             self.botones[f1][c1].config(image='')
             self.botones[f2][c2].config(image='')
