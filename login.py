@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from logica import GestorUsuarios  # Lógica de usuarios
 from ventana import VentanaPrincipal  # Ventana principal a mostrar tras login
-import face_gui  # Módulo para reconocimiento facial
+import face_gui2  # Módulo para reconocimiento facial
 
 class LoginApp:
     def __init__(self, root):
@@ -61,13 +61,13 @@ class LoginApp:
     def iniciar_sesion_face_id(self):
         """Inicia el reconocimiento facial y abre ventana principal si es exitoso."""
         try:
-            # Supongamos que face_gui.main_gui() retorna True si fue exitoso
+            # Supongamos que face_gui2.main_gui() retorna True si fue exitoso
             resultado = False
             
-            if hasattr(face_gui, 'main_gui'):
-                resultado = face_gui.main_gui()
-            elif hasattr(face_gui, 'main'):
-                resultado = face_gui.main()
+            if hasattr(face_gui2, 'main_gui'):
+                resultado = face_gui2.main_gui()
+            elif hasattr(face_gui2, 'main'):
+                resultado = face_gui2.main()
             else:
                 messagebox.showerror("Error", "No se encontró función para Face ID")
                 return
