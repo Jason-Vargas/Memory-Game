@@ -73,7 +73,7 @@ class FaceRecognitionSystem:
 
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                     cv2.putText(frame, f"Captura {count}/10", (x, y - 10), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
                 cv2.imshow("Registrando rostro", frame)
 
@@ -188,13 +188,16 @@ class FaceRecognitionSystem:
 
                     cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
                     cv2.putText(frame, label, (x, y - 10), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
                     if recognized_user:
                         cv2.imshow("Login con rostro", frame)
                         cv2.waitKey(1000)
-                        messagebox.showinfo("Login exitoso", f"Bienvenido, {name}!")
-                        return recognized_user
+                        cv2.destroyAllWindows()  # Cerrar ventana de OpenCV
+                        
+                        from ventana import VentanaPrincipal  # Importa aquí para evitar ciclos
+                        ventana = VentanaPrincipal()
+                        ventana.ejecutar()
 
                 cv2.imshow("Login con rostro", frame)
 

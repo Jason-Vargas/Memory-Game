@@ -13,35 +13,30 @@ class Jugador:
         self.puntos += 1
 
 class Bot(Jugador):
-    def __init__(self, nombre):
-        super().__init__(nombre)
-
-    def seleccionar_cartas(self, matriz_botones, imagenes, filas, columnas):
-        disponibles = []
-        for i in range(filas):
-            for j in range(columnas):
-                boton = matriz_botones[i][j]
-                if boton["state"] != "disabled" and boton.cget("image") == "":
-                    disponibles.append((i, j))
+    def seleccionar_cartas(self, matriz_botones, filas, columnas):
+        disponibles = [
+            (i, j) for i in range(filas) for j in range(columnas)
+            if matriz_botones[i][j]["state"] != "disabled" and matriz_botones[i][j].cget("image") == ""
+        ]
         if len(disponibles) < 2:
             return []
         return random.sample(disponibles, 2)
 
 class Temporizador:
-    def __init__(self, barra_progreso, ventana, callback_tiempo_agotado):
+    def __init__(self, barra_progreso, ventana, callback_tiempo_agotado, duracion=10):
         self.barra = barra_progreso
         self.ventana = ventana
-        self.segundos_totales = 10
-        self.segundos_restantes = self.segundos_totales
+        self.duracion = duracion
+        self.segundos_restantes = duracion
         self.actualizando = False
         self.callback_tiempo_agotado = callback_tiempo_agotado
-        self._job = None  # Para guardar el after y poder cancelarlo
+        self._job = None
 
     def iniciar(self):
-        self.detener()  # Por si ya estaba corriendo
-        self.segundos_restantes = self.segundos_totales
-        self.barra['maximum'] = self.segundos_totales
-        self.barra['value'] = self.segundos_totales
+        self.detener()
+        self.segundos_restantes = self.duracion
+        self.barra['maximum'] = self.duracion
+        self.barra['value'] = self.duracion
         self.actualizando = True
         self._programar_actualizacion()
 
@@ -65,7 +60,6 @@ class Temporizador:
         self.segundos_restantes -= 1
         self._job = self.ventana.after(1000, self._programar_actualizacion)
 
-
 class VentanaJuego:
     def __init__(self, ventana_anterior):
         self.ventana_anterior = ventana_anterior
@@ -73,20 +67,15 @@ class VentanaJuego:
         self.ventana.title("Juego de Memoria")
         self.ventana.geometry("1000x820")
         self.ventana.configure(bg="#f3f3f3")
-        
-        
-        # Fondo
-        imagen_fondo = Image.open("IMG//First//Game.png")
-        imagen_fondo = imagen_fondo.resize((1000, 820))
-        self.fondo_tk = ImageTk.PhotoImage(imagen_fondo)
 
+        # Fondo
+        imagen_fondo = Image.open("IMG//First//Game.png").resize((1000, 820))
+        self.fondo_tk = ImageTk.PhotoImage(imagen_fondo)
         self.label_fondo = tk.Label(self.ventana, image=self.fondo_tk)
         self.label_fondo.place(x=0, y=0, relwidth=1, relheight=1)
-        self.label_fondo.lower()  # Asegura que el fondo quede detrás de todo
+        self.label_fondo.lower()
 
-
-        self.filas = 6
-        self.columnas = 6
+        self.filas, self.columnas = 6, 6
         self.boton_size = 90
 
         self.jugadores = [Jugador("Jugador 1"), Bot("Jugador 2 (Bot)")]
@@ -100,20 +89,21 @@ class VentanaJuego:
         self.parejas_encontradas = 0
 
         self.crear_interfaz()
-        imagenes = self.cargar_imagenes()
 
+        imagenes = self.cargar_imagenes()
         for _ in range(2):
             imgs = imagenes[:]
             random.shuffle(imgs)
             self.imagenes_jugadores.append(self.asignar_imagenes(imgs))
 
-        for jugador_idx in range(2):
-            self.matrices_jugadores[jugador_idx] = self.crear_matriz(jugador_idx)
+        for idx in range(2):
+            self.matrices_jugadores[idx] = self.crear_matriz(idx)
 
         self.mostrar_tablero(self.turno_actual)
 
         self.temporizador = Temporizador(self.barra_tiempo, self.ventana, self.tiempo_agotado)
         self.temporizador.iniciar()
+
         self.ventana.protocol("WM_DELETE_WINDOW", self.cerrar_ventana)
 
         if isinstance(self.jugadores[self.turno_actual], Bot):
@@ -121,24 +111,22 @@ class VentanaJuego:
 
     def cargar_imagenes(self):
         ruta_img = "IMG"
-        nombres_png = [nombre for nombre in os.listdir(ruta_img) if nombre.endswith(".png")]
-        nombres_png = nombres_png[:self.total_parejas]
+        nombres_png = [f for f in os.listdir(ruta_img) if f.endswith(".png")][:self.total_parejas]
         imagenes_temp = []
         for nombre in nombres_png:
             ruta = os.path.join(ruta_img, nombre)
             imagen = Image.open(ruta).resize((self.boton_size, self.boton_size))
             imagen_tk = ImageTk.PhotoImage(imagen)
-            imagenes_temp.append(imagen_tk)
-            imagenes_temp.append(imagen_tk)
+            imagenes_temp.extend([imagen_tk, imagen_tk])
         random.shuffle(imagenes_temp)
         return imagenes_temp
 
     def asignar_imagenes(self, imagenes):
         matriz = []
         idx = 0
-        for i in range(self.filas):
+        for _ in range(self.filas):
             fila = []
-            for j in range(self.columnas):
+            for _ in range(self.columnas):
                 fila.append(imagenes[idx])
                 idx += 1
             matriz.append(fila)
@@ -157,12 +145,11 @@ class VentanaJuego:
         self.barra_tiempo = ttk.Progressbar(self.frame_info, orient="horizontal", length=200, mode="determinate")
         self.barra_tiempo.pack(side="right", padx=20, pady=10)
 
-        self.frames_matrices = []
         frame_matrices_container = tk.Frame(self.frame_principal, bg="#FFFFFF")
         frame_matrices_container.pack(expand=True, pady=(10, 20))
 
         colores_fondo = ["#007FFF", "#FF4040"]
-
+        self.frames_matrices = []
         for i in range(2):
             frame = tk.Frame(frame_matrices_container, bg=colores_fondo[i])
             frame.grid(row=0, column=i, padx=20)
@@ -179,13 +166,8 @@ class VentanaJuego:
                 frame_celda.grid(row=i, column=j, padx=6, pady=6)
                 frame_celda.propagate(False)
 
-                boton = tk.Button(frame_celda,
-                                bg="#ffffff",
-                                relief="flat",
-                                bd=0,
-                                highlightthickness=0,
-                                activebackground="#e6e6e6",
-                                command=lambda f=i, c=j, jidx=jugador_idx: self.revelar_imagen(f, c, jidx))
+                boton = tk.Button(frame_celda, bg="#ffffff", relief="flat", bd=0, highlightthickness=0, activebackground="#e6e6e6",
+                                  command=lambda f=i, c=j, jidx=jugador_idx: self.revelar_imagen(f, c, jidx))
                 boton.pack(fill="both", expand=True)
                 fila.append(boton)
             botones.append(fila)
@@ -236,9 +218,9 @@ class VentanaJuego:
             ganador = max(self.jugadores, key=lambda j: j.puntos)
             empates = [j for j in self.jugadores if j.puntos == ganador.puntos]
             if len(empates) > 1:
-                mensaje = "\u00a1Empate!"
+                mensaje = "¡Empate!"
             else:
-                mensaje = f"\u00a1{ganador.nombre} ha ganado con {ganador.puntos} puntos!"
+                mensaje = f"¡{ganador.nombre} ha ganado con {ganador.puntos} puntos!"
             messagebox.showinfo("Fin del juego", mensaje)
         else:
             if isinstance(self.jugadores[self.turno_actual], Bot):
@@ -248,7 +230,6 @@ class VentanaJuego:
         for i, frame in enumerate(self.frames_matrices):
             if i == jugador_idx:
                 frame.tkraise()
-                frame.lift()
                 frame.grid()
             else:
                 frame.grid_remove()
@@ -263,7 +244,7 @@ class VentanaJuego:
         bot = self.jugadores[jugador_idx]
         botones = self.matrices_jugadores[jugador_idx]
 
-        pares = bot.seleccionar_cartas(botones, self.imagenes_jugadores[jugador_idx], self.filas, self.columnas)
+        pares = bot.seleccionar_cartas(botones, self.filas, self.columnas)
         if len(pares) < 2:
             return
 
@@ -284,7 +265,7 @@ class VentanaJuego:
         self.ventana.after(1000, revelar_segunda)
 
     def tiempo_agotado(self):
-        messagebox.showinfo("Tiempo agotado", f"Tiempo terminado. Cambia turno.")
+        messagebox.showinfo("Tiempo agotado", "Tiempo terminado. Cambia turno.")
         self.turno_actual = 1 - self.turno_actual
         self.mostrar_tablero(self.turno_actual)
         self.temporizador.reiniciar()
@@ -298,4 +279,3 @@ class VentanaJuego:
         self.temporizador.detener()
         self.ventana.destroy()
         self.ventana_anterior.deiconify()
-
