@@ -73,6 +73,17 @@ class VentanaJuego:
         self.ventana.title("Juego de Memoria")
         self.ventana.geometry("1000x820")
         self.ventana.configure(bg="#f3f3f3")
+        
+        
+        # Fondo
+        imagen_fondo = Image.open("IMG//First//Game.png")
+        imagen_fondo = imagen_fondo.resize((1000, 820))
+        self.fondo_tk = ImageTk.PhotoImage(imagen_fondo)
+
+        self.label_fondo = tk.Label(self.ventana, image=self.fondo_tk)
+        self.label_fondo.place(x=0, y=0, relwidth=1, relheight=1)
+        self.label_fondo.lower()  # Asegura que el fondo quede detrás de todo
+
 
         self.filas = 6
         self.columnas = 6
@@ -134,20 +145,20 @@ class VentanaJuego:
         return matriz
 
     def crear_interfaz(self):
-        self.frame_principal = tk.Frame(self.ventana, bg="#f3f3f3")
+        self.frame_principal = tk.Frame(self.ventana, bg="#007FFF")
         self.frame_principal.pack(fill="both", expand=True)
 
-        self.frame_info = tk.Frame(self.frame_principal, height=50, bg="#858386")
+        self.frame_info = tk.Frame(self.frame_principal, height=50, bg="#FFFFFF")
         self.frame_info.pack(side="top", fill="x")
 
-        self.etiqueta_info = tk.Label(self.frame_info, text="", bg="#858386", fg="white", font=("Arial", 14))
+        self.etiqueta_info = tk.Label(self.frame_info, text="", bg="#000000", fg="white", font=("Arial", 14))
         self.etiqueta_info.pack(pady=10, side="left", padx=20)
 
         self.barra_tiempo = ttk.Progressbar(self.frame_info, orient="horizontal", length=200, mode="determinate")
         self.barra_tiempo.pack(side="right", padx=20, pady=10)
 
         self.frames_matrices = []
-        frame_matrices_container = tk.Frame(self.frame_principal, bg="#696969")
+        frame_matrices_container = tk.Frame(self.frame_principal, bg="#FFFFFF")
         frame_matrices_container.pack(expand=True, pady=(10, 20))
 
         colores_fondo = ["#007FFF", "#FF4040"]
