@@ -21,16 +21,16 @@ class VentanaPrincipal:
 
     def inicializar_componentes(self):
         boton_bot = tk.Button(self.ventana, text="Modo Clásico (Contra Bot)", font=("Arial", 14), 
-                             command=self.abrir_juego_bot, bg="gray")
+                            command=self.abrir_juego_bot, bg="gray")
         boton_online = tk.Button(self.ventana, text="Buscar Partida Online", font=("Arial", 14), 
-                                 command=self.abrir_juego_online, bg="gray")
+                            command=self.abrir_juego_online, bg="gray")
 
         self.canvas.create_window(600, 300, window=boton_bot)
         self.canvas.create_window(600, 380, window=boton_online)
 
     def abrir_juego_bot(self):
         self.ventana.withdraw()
-        juego = VentanaJuego(self.ventana, modo='bot')
+        juego = VentanaJuego(self.ventana)
         juego.ventana.mainloop()
 
     def abrir_juego_online(self):
