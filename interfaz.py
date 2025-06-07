@@ -3,13 +3,68 @@ from tkinter import messagebox
 import threading
 import time
 from game_logic import PatternGame
+from APIBCCR import TipoCambioBCCR
+
+def mostrar_tipo_cambio_hoy(correo_api, token_api):
+    """
+    Función que solo imprime el tipo de cambio del dólar del día de hoy en la terminal.
+    
+    Args:
+        correo_api (str): Correo electrónico registrado en el BCCR
+        token_api (str): Token de API del BCCR
+    """
+    try:
+        # Verificar credenciales primero
+        if not correo_api or correo_api == "tu_correo@ejemplo.com":
+            print("❌ Error: Debes configurar tu correo real del BCCR")
+            print("   Cambia 'tu_correo@ejemplo.com' por tu correo registrado")
+            return
+            
+        if not token_api or token_api == "tu_token_aqui":
+            print("❌ Error: Debes configurar tu token real del BCCR")
+            print("   Cambia 'tu_token_aqui' por tu token de la API")
+            return
+        
+        print(f"🔑 Usando correo: {correo_api}")
+        print("🔑 Token configurado ✓")
+        
+        # Crear instancia del cliente BCCR
+        bccr = TipoCambioBCCR(correo_api, token_api)
+        print("📡 Conectando con BCCR...")
+        
+        # Obtener tipo de cambio de venta del día
+        tipo_cambio = bccr.obtener_venta()
+        
+        print(f"📊 Respuesta de la API: {tipo_cambio}")
+        
+        if not tipo_cambio or tipo_cambio <= 0:
+            print("❌ No se pudo obtener el tipo de cambio")
+            print("   Posibles causas:")
+            print("   • Credenciales incorrectas")
+            print("   • Token expirado")
+            print("   • Problema de conexión")
+            print("   • API del BCCR temporalmente no disponible")
+            return
+            
+        print(f"💱 Tipo de cambio del dólar hoy: ₡{tipo_cambio:.2f}")
+        
+    except ImportError:
+        print("❌ Error: No se pudo importar el módulo APIBCCR")
+        print("   Asegúrate de que el archivo APIBCCR.py esté en la misma carpeta")
+    except Exception as e:
+        print(f"❌ Error detallado: {type(e).__name__}: {e}")
+        print("   Revisa tus credenciales y conexión a internet")
 
 class PatternGameGUI:
-    def __init__(self):
+    def __init__(self, correo_api=None, token_api=None):
         self.root = tk.Tk()
         self.root.title("Juego de Patrones - Con Timer")
         self.root.geometry("800x750")
         self.root.configure(bg='#2c3e50')
+        
+        # Configuración API para BCCR
+        self.correo_api = correo_api
+        self.token_api = token_api
         
         # Variables de interfaz
         self.buttons = {}
@@ -210,6 +265,7 @@ class PatternGameGUI:
         self.disable_all_inputs()
         self.instruction_label.config(text="💀 ¡Juego Terminado!")
         self.timer_label.config(text="Tiempo: --", fg='#e74c3c')
+        self.calcular_y_mostrar_valor_en_dolares(game_state['score'])
         
         messagebox.showinfo(
             "Juego Terminado",
@@ -232,6 +288,7 @@ class PatternGameGUI:
         self.disable_all_inputs()
         self.instruction_label.config(text="🏆 ¡VICTORIA TOTAL!")
         self.timer_label.config(text="Tiempo: --", fg='#27ae60')
+        self.calcular_y_mostrar_valor_en_dolares(game_state['score'])
         
         messagebox.showinfo(
             "¡FELICITACIONES!",
@@ -297,6 +354,36 @@ class PatternGameGUI:
         # Notificar al juego que terminó la animación
         self.root.after(100, self.game.pattern_display_finished)
         
+    
+    def calcular_y_mostrar_valor_en_dolares(self, score):
+        """Calcula e imprime el valor en dólares usando el tipo de cambio de venta del BCCR"""
+        if score <= 0:
+            print("⚠️ No se puede calcular: puntuación es 0 o menor.")
+            return
+
+        try:
+            if not self.correo_api or not self.token_api:
+                raise ValueError("Credenciales de API no configuradas")
+
+            bccr = TipoCambioBCCR(self.correo_api, self.token_api)
+            tipo_cambio_crc = bccr.obtener_venta()
+
+            if not tipo_cambio_crc or tipo_cambio_crc <= 0:
+                raise ValueError("Tipo de cambio inválido")
+
+            resultado_dolares = (1 / score) * 100 * tipo_cambio_crc
+
+            print(f"💰 Tipo de cambio del dólar: ₡{tipo_cambio_crc:.2f}")
+            print(f"💵 Operación: 1/{score} * 100 * {tipo_cambio_crc:.2f} = ${resultado_dolares:.2f} USD")
+            print(f"🎯 Tu puntuación de {score} vale ${resultado_dolares:.2f} USD")
+
+        except:
+            # Cálculo de respaldo sin mostrar errores técnicos
+            puntos_base = (1 / score) * 100
+            print(f"⚠️ Se usará cálculo sin tipo de cambio.")
+            print(f"💵 Cálculo de respaldo: 1/{score} * 100 = {puntos_base:.2f} puntos")
+
+        
     # === MÉTODOS DE CONTROL DE UI ===
     def enable_color_buttons(self):
         """Habilita solo los botones de colores"""
@@ -317,5 +404,17 @@ class PatternGameGUI:
         self.root.mainloop()
 
 if __name__ == "__main__":
-    game = PatternGameGUI()
+    # Ejemplo de uso con credenciales de API
+    # Reemplaza con tus credenciales reales
+    correo_api = "jason.vargas.jy@gmail.com"  # Reemplaza con tu correo real
+    token_api = "SANMAI01V4"           # Reemplaza con tu token real
+    
+    # Mostrar tipo de cambio del día antes de iniciar el juego
+    print("🔄 Obteniendo tipo de cambio actual...")
+    mostrar_tipo_cambio_hoy(correo_api, token_api)
+    print()  # Línea en blanco para separar
+    
+    # Crear el juego con credenciales (opcional)
+    game = PatternGameGUI(correo_api, token_api)
+    # O sin credenciales: game = PatternGameGUI()
     game.run()
