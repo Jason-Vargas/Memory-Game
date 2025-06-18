@@ -4,6 +4,9 @@ from logica import GestorUsuarios  # Lógica de usuarios
 from ventana import VentanaPrincipal  # Ventana principal a mostrar tras login
 import face_gui2  # Módulo para reconocimiento facial
 from APIBCCR import *
+import pygame 
+
+
 
 class LoginApp:
     def __init__(self, root):
@@ -11,6 +14,13 @@ class LoginApp:
         self.root.title("🎉 ¡Bienvenido! 🎉")
         self.root.geometry("350x400")
         self.root.configure(bg="#3BDBFF")
+        
+        
+        
+        pygame.mixer.init()
+        pygame.mixer.music.load("fondo.mp3")  # Cambiá el nombre si tu archivo tiene otro
+        pygame.mixer.music.set_volume(0.5)  # Volumen entre 0.0 y 1.0
+        pygame.mixer.music.play(-1)  # -1 hace que se repita indefinidamente
         
         self.gestor = GestorUsuarios()
         

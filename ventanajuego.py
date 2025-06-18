@@ -1,9 +1,11 @@
+# Importación de módulos necesarios
 import tkinter as tk
 from tkinter import messagebox, ttk
 from PIL import Image, ImageTk
 import random
 import os
 
+# Clase que representa a un jugador humano
 class Jugador:
     def __init__(self, nombre):
         self.nombre = nombre
@@ -12,8 +14,10 @@ class Jugador:
     def agregar_punto(self):
         self.puntos += 1
 
+# Subclase Bot, hereda de Jugador e implementa lógica de selección aleatoria de cartas
 class Bot(Jugador):
     def seleccionar_cartas(self, matriz_botones, filas, columnas):
+        # Selecciona dos botones aleatorios no deshabilitados y que no estén mostrando imagen
         disponibles = [
             (i, j) for i in range(filas) for j in range(columnas)
             if matriz_botones[i][j]["state"] != "disabled" and matriz_botones[i][j].cget("image") == ""
@@ -22,6 +26,7 @@ class Bot(Jugador):
             return []
         return random.sample(disponibles, 2)
 
+# Clase para gestionar el temporizador por turno
 class Temporizador:
     def __init__(self, barra_progreso, ventana, callback_tiempo_agotado, duracion=10):
         self.barra = barra_progreso
@@ -50,6 +55,7 @@ class Temporizador:
         self.iniciar()
 
     def _programar_actualizacion(self):
+        # Actualiza el valor de la barra cada segundo hasta que llegue a cero
         if not self.actualizando:
             return
         if self.segundos_restantes <= 0:
@@ -60,6 +66,7 @@ class Temporizador:
         self.segundos_restantes -= 1
         self._job = self.ventana.after(1000, self._programar_actualizacion)
 
+# Ventana principal del juego de memoria
 class VentanaJuego:
     def __init__(self, ventana_anterior):
         self.ventana_anterior = ventana_anterior
@@ -68,7 +75,7 @@ class VentanaJuego:
         self.ventana.geometry("1000x820")
         self.ventana.configure(bg="#f3f3f3")
 
-        # Fondo
+        # Carga de fondo de pantalla
         imagen_fondo = Image.open("IMG//First//Game.png").resize((1000, 820))
         self.fondo_tk = ImageTk.PhotoImage(imagen_fondo)
         self.label_fondo = tk.Label(self.ventana, image=self.fondo_tk)
@@ -78,6 +85,7 @@ class VentanaJuego:
         self.filas, self.columnas = 6, 6
         self.boton_size = 90
 
+        # Inicialización de jugadores: uno humano, uno bot
         self.jugadores = [Jugador("Jugador 1"), Bot("Jugador 2 (Bot)")]
         self.turno_actual = 0
 
@@ -88,8 +96,10 @@ class VentanaJuego:
         self.total_parejas = (self.filas * self.columnas) // 2
         self.parejas_encontradas = 0
 
+        # Interfaz gráfica
         self.crear_interfaz()
 
+        # Carga y asignación de imágenes para cada jugador
         imagenes = self.cargar_imagenes()
         for _ in range(2):
             imgs = imagenes[:]
@@ -101,15 +111,18 @@ class VentanaJuego:
 
         self.mostrar_tablero(self.turno_actual)
 
+        # Temporizador para limitar el tiempo por turno
         self.temporizador = Temporizador(self.barra_tiempo, self.ventana, self.tiempo_agotado)
         self.temporizador.iniciar()
 
         self.ventana.protocol("WM_DELETE_WINDOW", self.cerrar_ventana)
 
+        # Si el primer turno es del bot, inicia su jugada
         if isinstance(self.jugadores[self.turno_actual], Bot):
             self.ventana.after(1000, self.turno_bot)
 
     def cargar_imagenes(self):
+        # Carga pares de imágenes desde la carpeta IMG
         ruta_img = "IMG"
         nombres_png = [f for f in os.listdir(ruta_img) if f.endswith(".png")][:self.total_parejas]
         imagenes_temp = []
@@ -122,6 +135,7 @@ class VentanaJuego:
         return imagenes_temp
 
     def asignar_imagenes(self, imagenes):
+        # Organiza las imágenes en una matriz de filas x columnas
         matriz = []
         idx = 0
         for _ in range(self.filas):
@@ -133,6 +147,7 @@ class VentanaJuego:
         return matriz
 
     def crear_interfaz(self):
+        # Construye los elementos de la interfaz del juego
         self.frame_principal = tk.Frame(self.ventana, bg="#007FFF")
         self.frame_principal.pack(fill="both", expand=True)
 
@@ -158,6 +173,7 @@ class VentanaJuego:
         self.actualizar_info_turno()
 
     def crear_matriz(self, jugador_idx):
+        # Crea la matriz de botones para cada jugador
         botones = []
         for i in range(self.filas):
             fila = []
@@ -174,6 +190,7 @@ class VentanaJuego:
         return botones
 
     def revelar_imagen(self, fila, col, jugador_idx):
+        # Muestra la imagen de una celda seleccionada
         if jugador_idx != self.turno_actual or isinstance(self.jugadores[jugador_idx], Bot) or len(self.celdas_reveladas) >= 2:
             return
 
@@ -190,6 +207,7 @@ class VentanaJuego:
             self.ventana.after(800, lambda: self.verificar_coincidencia(jugador_idx))
 
     def verificar_coincidencia(self, jugador_idx):
+        # Verifica si las dos imágenes reveladas coinciden
         (f1, c1), (f2, c2) = self.celdas_reveladas
         img1 = self.imagenes_jugadores[jugador_idx][f1][c1]
         img2 = self.imagenes_jugadores[jugador_idx][f2][c2]
@@ -227,6 +245,7 @@ class VentanaJuego:
                 self.ventana.after(1000, self.turno_bot)
 
     def mostrar_tablero(self, jugador_idx):
+        # Muestra solo la matriz del jugador actual
         for i, frame in enumerate(self.frames_matrices):
             if i == jugador_idx:
                 frame.tkraise()
@@ -235,11 +254,13 @@ class VentanaJuego:
                 frame.grid_remove()
 
     def actualizar_info_turno(self):
+        # Actualiza la etiqueta de información superior
         j1, j2 = self.jugadores
         texto = f"{j1.nombre}: {j1.puntos} pts   |   {j2.nombre}: {j2.puntos} pts   |   Turno: {self.jugadores[self.turno_actual].nombre}"
         self.etiqueta_info.config(text=texto)
 
     def turno_bot(self):
+        # Simula el turno del bot seleccionando dos cartas
         jugador_idx = self.turno_actual
         bot = self.jugadores[jugador_idx]
         botones = self.matrices_jugadores[jugador_idx]
@@ -265,6 +286,7 @@ class VentanaJuego:
         self.ventana.after(1000, revelar_segunda)
 
     def tiempo_agotado(self):
+        # Acción a realizar si el tiempo del turno se agota
         messagebox.showinfo("Tiempo agotado", "Tiempo terminado. Cambia turno.")
         self.turno_actual = 1 - self.turno_actual
         self.mostrar_tablero(self.turno_actual)
@@ -276,6 +298,7 @@ class VentanaJuego:
             self.ventana.after(1000, self.turno_bot)
 
     def cerrar_ventana(self):
+        # Al cerrar ventana, detener temporizador y volver a la ventana anterior
         self.temporizador.detener()
         self.ventana.destroy()
         self.ventana_anterior.deiconify()

@@ -55,6 +55,36 @@ def mostrar_tipo_cambio_hoy(correo_api, token_api):
         print(f"❌ Error detallado: {type(e).__name__}: {e}")
         print("   Revisa tus credenciales y conexión a internet")
 
+
+def guardar_mejores_resultados(score, valor_usd, archivo="mejores_resultados.txt"):
+    nuevo_resultado = (score, valor_usd)
+
+    # Leer resultados anteriores
+    resultados = []
+    try:
+        with open(archivo, "r") as f:
+            for linea in f:
+                partes = linea.strip().split(" - Valor: $")
+                if len(partes) == 2:
+                    puntaje = int(partes[0].replace("Puntaje: ", ""))
+                    valor = float(partes[1].replace(" USD", ""))
+                    resultados.append((puntaje, valor))
+    except FileNotFoundError:
+        pass  # Si no existe, se crea después
+
+    # Agregar nuevo resultado y ordenar por valor_usd descendente
+    resultados.append(nuevo_resultado)
+    resultados.sort(key=lambda x: x[1], reverse=True)
+
+    # Mantener solo los 5 mejores
+    mejores = resultados[:5]
+
+    # Guardar en el archivo
+    with open(archivo, "w") as f:
+        for puntaje, valor in mejores:
+            f.write(f"Puntaje: {puntaje} - Valor: ${valor:.2f} USD\n")
+
+
 class PatternGameGUI:
     def __init__(self, correo_api=None, token_api=None):
         self.root = tk.Tk()
@@ -356,9 +386,10 @@ class PatternGameGUI:
         
     
     def calcular_y_mostrar_valor_en_dolares(self, score):
-        """Calcula e imprime el valor en dólares usando el tipo de cambio de venta del BCCR"""
+        """Calcula y muestra el valor en dólares usando el tipo de cambio de venta del BCCR"""
+        """Calcula y muestra el valor en dólares usando el tipo de cambio de venta del BCCR"""
         if score <= 0:
-            print("⚠️ No se puede calcular: puntuación es 0 o menor.")
+            messagebox.showwarning("Cálculo inválido", "⚠️ No se puede calcular: la puntuación es 0 o menor.")
             return
 
         try:
@@ -373,15 +404,23 @@ class PatternGameGUI:
 
             resultado_dolares = (1 / score) * 100 * tipo_cambio_crc
 
-            print(f"💰 Tipo de cambio del dólar: ₡{tipo_cambio_crc:.2f}")
-            print(f"💵 Operación: 1/{score} * 100 * {tipo_cambio_crc:.2f} = ${resultado_dolares:.2f} USD")
-            print(f"🎯 Tu puntuación de {score} vale ${resultado_dolares:.2f} USD")
+            mensaje = (
+                f"💰 Tipo de cambio del dólar: ₡{tipo_cambio_crc:.2f}\n"
+                f"💵 Operación: 1/{score} * 100 * {tipo_cambio_crc:.2f} = ${resultado_dolares:.2f} USD\n"
+                f"🎯 Tu puntuación de {score} vale ${resultado_dolares:.2f} USD"
+            )
+            messagebox.showinfo("Resultado final", mensaje)
+            guardar_mejores_resultados(score, resultado_dolares)
+
 
         except:
             # Cálculo de respaldo sin mostrar errores técnicos
             puntos_base = (1 / score) * 100
-            print(f"⚠️ Se usará cálculo sin tipo de cambio.")
-            print(f"💵 Cálculo de respaldo: 1/{score} * 100 = {puntos_base:.2f} puntos")
+            mensaje_respaldo = (
+                "⚠️ No se pudo obtener el tipo de cambio oficial.\n"
+                f"💵 Cálculo de respaldo: 1/{score} * 100 = {puntos_base:.2f} puntos"
+            )
+            messagebox.showwarning("Cálculo de respaldo", mensaje_respaldo)
 
         
     # === MÉTODOS DE CONTROL DE UI ===
