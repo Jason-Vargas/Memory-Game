@@ -4,6 +4,7 @@ from ventanajuego import VentanaJuego  # Ajusta si está en otro lugar
 from tkinter import messagebox
 import threading
 from interfaz import PatternGameGUI  # Suponiendo que el segundo código está en patterngamegui.py
+from APIBCCR import TipoCambioBCCR
 
 class VentanaPrincipal:
     def __init__(self):

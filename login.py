@@ -3,6 +3,7 @@ from tkinter import messagebox
 from logica import GestorUsuarios  # Lógica de usuarios
 from ventana import VentanaPrincipal  # Ventana principal a mostrar tras login
 import face_gui2  # Módulo para reconocimiento facial
+from APIBCCR import *
 
 class LoginApp:
     def __init__(self, root):
